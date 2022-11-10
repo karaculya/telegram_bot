@@ -24,7 +24,7 @@ public class TestBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "5292527597:AAHNqx7BktH32ffTJPS4Gv2ju4ljmah93xE";
+        return "...";
     }
 
     @Override
@@ -84,7 +84,7 @@ public class TestBot extends TelegramLongPollingBot {
                     String week = whatWeek(new Date());
                     message.setText("Сейчас " + week + " неделя");
                 }
-                case "redact72443" -> {
+                case "/redact" -> {
                     message.setChatId(String.valueOf(chat_id));
                     message.setText(edit(split));
                 }
