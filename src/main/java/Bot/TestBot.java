@@ -24,7 +24,7 @@ public class TestBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "...";
+        return "";
     }
 
     @Override
@@ -65,19 +65,11 @@ public class TestBot extends TelegramLongPollingBot {
                 }
                 case "/today" -> {
                     message.setChatId(String.valueOf(chat_id));
-                    try {
-                        message.setText("Расписание на сегодня:" + getSchedule(determineDate(new Date())));
-                    } catch (Exception e) {
-                        message.setText("Нет расписания на сегодня");
-                    }
+                    message.setText("Расписание на сегодня:" + getSchedule(determineDate(new Date())));
                 }
                 case "/tomorrow" -> {
                     message.setChatId(String.valueOf(chat_id));
-                    try {
-                        message.setText("Расписание на завтра:" + getSchedule(determineNextDate()));
-                    } catch (Exception e) {
-                        message.setText("нет расписания на этот день");
-                    }
+                    message.setText("Расписание на завтра:" + getSchedule(determineNextDate()));
                 }
                 case "/whatweek" -> {
                     message.setChatId(String.valueOf(chat_id));
@@ -90,16 +82,7 @@ public class TestBot extends TelegramLongPollingBot {
                 }
                 case "/day" -> {
                     message.setChatId(String.valueOf(chat_id));
-                    if (dayName != null) {
-                        try {
-                            Date date = DATE_FORMAT.parse(dayName);
-                            message.setText("Расписание на указанную дату:" +
-                                    "" + getSchedule(determineDate(date)));
-                        } catch (Exception e) {
-                            message.setText("Укажите правильно дату");
-                        }
-                    } else
-                        message.setText("Не указана дата");
+                    message.setText(getScheduleCertainDay(dayName));
                 }
                 default -> {
                     message.setChatId(String.valueOf(chat_id));
@@ -143,7 +126,7 @@ public class TestBot extends TelegramLongPollingBot {
         return determineDate(nextDate);
     }
 
-    private String getSchedule(String date) throws Exception {
+    private String getSchedule(String date) {
         List<String> schedule = new ArrayList<>();
         StringBuilder fullText = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
@@ -151,6 +134,8 @@ public class TestBot extends TelegramLongPollingBot {
                 String s = reader.readLine();
                 fullText.append(s).append("\r\n");
             }
+        } catch (IOException e) {
+            return "не удалось узнать расписание :с";
         }
         String[] split = fullText.toString().split("@");
         Day day = Day.valueOfName(date);
@@ -166,24 +151,32 @@ public class TestBot extends TelegramLongPollingBot {
         return s.toString();
     }
 
-    private String whatWeek(Date d) {
-        SimpleDateFormat date = new SimpleDateFormat("w");
-        int numberWeek = Integer.parseInt(date.format(d.getTime()));
-        if (numberWeek % 2 == 0)
-            return "чётная";
-        else
-            return "нечёт";
+    private String whatWeek(Date date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("w");
+        int numberWeek = Integer.parseInt(dateFormat.format(date.getTime()));
+        return (numberWeek & 1) == 0 ? "чётная" : "нечёт";
     }
 
     private String edit(String[] array) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            for (int i = 1; i < array.length; i++) {
+            for (int i = 1; i < array.length; i++)
                 writer.write(array[i] + " ");
-            }
             return "Расписание изменено";
         } catch (IOException e) {
             return "Не удалось изменить расписание";
         }
+    }
+
+    private String getScheduleCertainDay(String day) {
+        if (day != null) {
+            try {
+                Date date = DATE_FORMAT.parse(day);
+                return "Расписание на указанную дату:" + getSchedule(determineDate(date));
+            } catch (Exception e) {
+                return "Укажите правильно дату";
+            }
+        } else
+            return "Не указана дата";
     }
 }
 

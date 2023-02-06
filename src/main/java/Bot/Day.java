@@ -35,8 +35,7 @@ public enum Day {
     
     public static Day valueOfName (String s){
         for (Day day : Day.values()) {
-            if(s.toLowerCase(Locale.ROOT)
-                    .equals(day.name.toLowerCase(Locale.ROOT)))
+            if(s.toLowerCase(Locale.ROOT).equals(day.name.toLowerCase(Locale.ROOT)))
                 return day;
         }
         return null;
